@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Login | MediCare AI{% endblock %}
+{% block auth %}
+<main class="auth-page">
+    <section class="auth-panel">
+        <div class="auth-brand">
+            <span class="brand-mark">M</span>
+            <div>
+                <h1>MediCare AI</h1>
+                <p>Smart Hospital Management System</p>
+            </div>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="post" class="stack-form">
+            <div>
+                <label class="form-label">Role</label>
+                <select class="form-select" name="role" required>
+                    <option value="admin">Admin</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="patient">Patient</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Email</label>
+                <input class="form-control" type="email" name="email" value="admin@medicare.ai" required>
+            </div>
+            <div>
+                <label class="form-label">Password</label>
+                <input class="form-control" type="password" name="password" value="admin123" required>
+            </div>
+            <button class="btn btn-primary w-100" type="submit"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+        </form>
+        <div class="demo-box">
+            <span>Admin: admin@medicare.ai / admin123</span>
+            <span>Doctor: doctor@medicare.ai / doctor123</span>
+            <span>Patient: patient@medicare.ai / patient123</span>
+        </div>
+        <a class="auth-link" href="{{ url_for('main.register') }}">Create patient registration</a>
+    </section>
+</main>
+{% endblock %}
+

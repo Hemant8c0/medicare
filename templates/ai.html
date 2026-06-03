@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}AI Center | MediCare AI{% endblock %}
+{% block page_title %}AI Features{% endblock %}
+{% block page_subtitle %}Symptom checker, chatbot-style support panel, and disease prediction models{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>AI Tools</h2>
+            <span>Screening support</span>
+        </div>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#symptom" type="button">Symptoms</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#diabetes" type="button">Diabetes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#heart" type="button">Heart</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#liver" type="button">Liver</button>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="symptom">
+                <form method="post" class="stack-form">
+                    <input type="hidden" name="mode" value="symptom">
+                    <div>
+                        <label class="form-label">Symptoms</label>
+                        <textarea class="form-control" name="symptoms" rows="5" placeholder="Fever&#10;Cough&#10;Headache" required></textarea>
+                    </div>
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-search-heart"></i> Check Symptoms</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="diabetes">
+                <form method="post" class="row g-3">
+                    <input type="hidden" name="mode" value="diabetes">
+                    <div class="col-md-4"><label class="form-label">Age</label><input class="form-control" type="number" name="age" value="45"></div>
+                    <div class="col-md-4"><label class="form-label">Glucose</label><input class="form-control" type="number" name="glucose" value="130"></div>
+                    <div class="col-md-4"><label class="form-label">BMI</label><input class="form-control" type="number" step="0.1" name="bmi" value="28"></div>
+                    <div class="col-md-6"><label class="form-label">Blood Pressure</label><input class="form-control" type="number" name="blood_pressure" value="82"></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Family History</label>
+                        <select class="form-select" name="family_history"><option value="no">No</option><option value="yes">Yes</option></select>
+                    </div>
+                    <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-graph-up-pulse"></i> Predict</button></div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="heart">
+                <form method="post" class="row g-3">
+                    <input type="hidden" name="mode" value="heart">
+                    <div class="col-md-4"><label class="form-label">Age</label><input class="form-control" type="number" name="age" value="52"></div>
+                    <div class="col-md-4"><label class="form-label">Systolic BP</label><input class="form-control" type="number" name="systolic" value="145"></div>
+                    <div class="col-md-4"><label class="form-label">Diastolic BP</label><input class="form-control" type="number" name="diastolic" value="90"></div>
+                    <div class="col-md-4"><label class="form-label">Cholesterol</label><input class="form-control" type="number" name="cholesterol" value="220"></div>
+                    <div class="col-md-4"><label class="form-label">Chest Pain</label><select class="form-select" name="chest_pain"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Smoker</label><select class="form-select" name="smoker"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                    <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-heart-pulse"></i> Predict</button></div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="liver">
+                <form method="post" class="row g-3">
+                    <input type="hidden" name="mode" value="liver">
+                    <div class="col-md-4"><label class="form-label">Age</label><input class="form-control" type="number" name="age" value="48"></div>
+                    <div class="col-md-4"><label class="form-label">Bilirubin</label><input class="form-control" type="number" step="0.1" name="bilirubin" value="1.2"></div>
+                    <div class="col-md-4"><label class="form-label">ALT</label><input class="form-control" type="number" name="alt" value="55"></div>
+                    <div class="col-md-6"><label class="form-label">AST</label><input class="form-control" type="number" name="ast" value="60"></div>
+                    <div class="col-md-6"><label class="form-label">Alcohol History</label><select class="form-select" name="alcohol"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                    <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-activity"></i> Predict</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>AI Result</h2>
+            <span>Clinical screening only</span>
+        </div>
+        {% if result and result["type"] == "symptom" %}
+            {% for item in result["items"] %}
+                <div class="result-panel mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ item.disease }}</strong>
+                        <span>{{ item.confidence }}%</span>
+                    </div>
+                    <div class="progress my-2">
+                        <div class="progress-bar" style="width: {{ item.confidence }}%"></div>
+                    </div>
+                    <p class="mb-1 text-muted small">Matched: {{ item.matched|join(", ") if item.matched else "Not enough matches" }}</p>
+                    <p class="mb-0">{{ item.advice }}</p>
+                </div>
+            {% endfor %}
+        {% elif result and result["type"] == "prediction" %}
+            <div class="result-panel">
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong>{{ result["title"] }}</strong>
+                    <span class="badge text-bg-light">{{ result["data"].risk }} Risk</span>
+                </div>
+                <div class="display-6 fw-bold my-3">{{ result["data"].probability }}%</div>
+                <div class="progress mb-3">
+                    <div class="progress-bar" style="width: {{ result["data"].probability }}%"></div>
+                </div>
+                <p class="text-muted small mb-2">Factors: {{ result["data"].factors|join(", ") }}</p>
+                <p class="mb-0">{{ result["data"].recommendation }}</p>
+            </div>
+        {% else %}
+            <div class="result-panel">
+                <strong>AI Chatbot</strong>
+                <p class="mb-2 mt-2">Ask support questions about appointment timing, medicine availability, or report status from this hospital desk.</p>
+                <div class="border rounded p-3 bg-white">
+                    <p class="mb-1"><strong>Patient:</strong> I have fever, cough, and headache.</p>
+                    <p class="mb-0"><strong>MediCare AI:</strong> Use the symptom checker and book a doctor appointment if fever is high.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Laboratory | MediCare AI{% endblock %}
+{% block page_title %}Laboratory Management{% endblock %}
+{% block page_subtitle %}Blood test reports, X-Ray reports, MRI reports, and PDF download{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Reports</h2>
+            <span>{{ reports|length }} reports</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Report</th>
+                    <th>Patient</th>
+                    <th>Status</th>
+                    <th>PDF</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>
+                            <strong>{{ report.title }}</strong>
+                            <div class="text-muted small">{{ report.report_type }} | {{ report.created_at.strftime("%d %b %Y") }}</div>
+                        </td>
+                        <td>{{ report.patient.name }}</td>
+                        <td><span class="badge text-bg-light">{{ report.status }}</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.download_report', report_id=report.id) }}" data-bs-toggle="tooltip" title="Download PDF">
+                                <i class="bi bi-file-earmark-arrow-down"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-muted">No lab reports found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Create Report</h2>
+            <span>Lab desk</span>
+        </div>
+        <form method="post" class="stack-form">
+            <div>
+                <label class="form-label">Patient</label>
+                <select class="form-select" name="patient_id" required>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} - {{ patient.patient_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Report Type</label>
+                <select class="form-select" name="report_type" required>
+                    <option>Blood Test</option>
+                    <option>X-Ray</option>
+                    <option>MRI</option>
+                    <option>CT Scan</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Title</label>
+                <input class="form-control" name="title" required>
+            </div>
+            <div>
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option>Ready</option>
+                    <option>Processing</option>
+                    <option>Reviewed</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Findings</label>
+                <textarea class="form-control" name="findings" rows="5" required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-clipboard-plus"></i> Save Report</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

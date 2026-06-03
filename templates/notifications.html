@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Notifications | MediCare AI{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}SMS reminders, email reminders, and appointment alerts{% endblock %}
+{% block content %}
+<section class="surface">
+    <div class="section-title">
+        <h2>Notification Queue</h2>
+        <form method="post">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-bell"></i> Queue Reminders</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th>Channel</th>
+                <th>Recipient</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for notification in notifications %}
+                <tr>
+                    <td>{{ notification.channel }}</td>
+                    <td>{{ notification.recipient }}</td>
+                    <td>
+                        <strong>{{ notification.title }}</strong>
+                        <div class="text-muted small">{{ notification.message }}</div>
+                    </td>
+                    <td><span class="badge text-bg-light">{{ notification.status }}</span></td>
+                    <td>{{ notification.created_at.strftime("%d %b, %I:%M %p") }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="text-muted">No notifications queued.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+

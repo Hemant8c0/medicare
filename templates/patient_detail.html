@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.name }} | MediCare AI{% endblock %}
+{% block page_title %}{{ patient.name }}{% endblock %}
+{% block page_subtitle %}{{ patient.patient_code }} | {{ patient.age }} years | {{ patient.blood_group or "Blood group not set" }}{% endblock %}
+{% block content %}
+<section class="content-grid one-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Medical History</h2>
+            <span>{{ patient.histories|length }} entries</span>
+        </div>
+        <form method="post" class="row g-3 mb-3">
+            <input type="hidden" name="form_type" value="history">
+            <div class="col-md-6">
+                <label class="form-label">Condition</label>
+                <input class="form-control" name="condition" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Allergies</label>
+                <input class="form-control" name="allergies">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Medications</label>
+                <textarea class="form-control" name="medications" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" name="notes" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Save History</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Condition</th><th>Medication</th><th>Recorded</th></tr></thead>
+                <tbody>
+                {% for row in patient.histories|sort(attribute="recorded_at", reverse=true) %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.condition }}</strong>
+                            <div class="text-muted small">{{ row.allergies or "No allergy noted" }}</div>
+                        </td>
+                        <td>{{ row.medications or "-" }}</td>
+                        <td>{{ row.recorded_at.strftime("%d %b %Y") }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">No history saved.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Previous Reports</h2>
+            <span>{{ patient.reports|length }} reports</span>
+        </div>
+        <form method="post" class="stack-form mb-3">
+            <input type="hidden" name="form_type" value="report">
+            <div>
+                <label class="form-label">Report Type</label>
+                <select class="form-select" name="report_type" required>
+                    <option>Blood Test</option>
+                    <option>X-Ray</option>
+                    <option>MRI</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Title</label>
+                <input class="form-control" name="title" required>
+            </div>
+            <div>
+                <label class="form-label">Findings</label>
+                <textarea class="form-control" name="findings" rows="3" required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-file-earmark-plus"></i> Add Report</button>
+        </form>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Report</th><th>Status</th><th>PDF</th></tr></thead>
+                <tbody>
+                {% for report in patient.reports|sort(attribute="created_at", reverse=true) %}
+                    <tr>
+                        <td>
+                            <strong>{{ report.title }}</strong>
+                            <div class="text-muted small">{{ report.report_type }}</div>
+                        </td>
+                        <td><span class="badge text-bg-light">{{ report.status }}</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.download_report', report_id=report.id) }}" data-bs-toggle="tooltip" title="Download PDF">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">No reports found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

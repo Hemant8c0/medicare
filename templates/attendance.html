@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Attendance | MediCare AI{% endblock %}
+{% block page_title %}Face Recognition Attendance{% endblock %}
+{% block page_subtitle %}Doctor attendance, staff attendance, and security verification{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Attendance Records</h2>
+            <span>{{ records|length }} entries</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Staff</th>
+                    <th>Type</th>
+                    <th>Faces</th>
+                    <th>Verified</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for record in records %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.staff_name }}</strong>
+                            <div class="text-muted small">{{ record.email or "-" }}</div>
+                        </td>
+                        <td>{{ record.staff_type }}</td>
+                        <td>{{ record.detected_faces }}</td>
+                        <td>
+                            {% if record.verified %}
+                                <span class="badge text-bg-success">Verified</span>
+                            {% else %}
+                                <span class="badge text-bg-warning">Review</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ record.marked_at.strftime("%d %b, %I:%M %p") }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No attendance records.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Mark Attendance</h2>
+            <span>OpenCV face check</span>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="stack-form">
+            <div>
+                <label class="form-label">Staff Type</label>
+                <select class="form-select" name="staff_type" required>
+                    <option>Doctor</option>
+                    <option>Staff</option>
+                    <option>Security</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Name</label>
+                <input class="form-control" name="staff_name" required>
+            </div>
+            <div>
+                <label class="form-label">Email</label>
+                <input class="form-control" type="email" name="email">
+            </div>
+            <div>
+                <label class="form-label">Face Image</label>
+                <input class="form-control" type="file" name="face_image" accept="image/*" required>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-camera"></i> Verify and Mark</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

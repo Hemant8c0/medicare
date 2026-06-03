@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Appointments | MediCare AI{% endblock %}
+{% block page_title %}Appointment System{% endblock %}
+{% block page_subtitle %}Online booking, slot selection, status updates, and reminders{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Appointment Schedule</h2>
+            <span>{{ appointments|length }} records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Slot</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for appointment in appointments %}
+                    <tr>
+                        <td>
+                            <strong>{{ appointment.patient.name }}</strong>
+                            <div class="text-muted small">{{ appointment.symptoms or "No symptoms" }}</div>
+                        </td>
+                        <td>{{ appointment.doctor.name }}</td>
+                        <td>{{ appointment.scheduled_for.strftime("%d %b %Y, %I:%M %p") }}</td>
+                        <td>{{ appointment.appointment_type }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('main.update_appointment_status', appointment_id=appointment.id) }}" class="d-flex gap-2">
+                                <select class="form-select form-select-sm" name="status">
+                                    {% for status in ["Pending", "Confirmed", "Completed", "Cancelled"] %}
+                                        <option {{ "selected" if appointment.status == status }}>{{ status }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-sm btn-outline-primary" type="submit" data-bs-toggle="tooltip" title="Update">
+                                    <i class="bi bi-check2"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No appointments found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Online Booking</h2>
+            <span>SMS and email queued</span>
+        </div>
+        <form method="post" class="stack-form">
+            {% if current_role != "patient" %}
+                <div>
+                    <label class="form-label">Patient</label>
+                    <select class="form-select" name="patient_id" required>
+                        {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.name }} - {{ patient.patient_code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            <div>
+                <label class="form-label">Doctor</label>
+                <select class="form-select" name="doctor_id" required>
+                    {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">{{ doctor.name }} - {{ doctor.specialization }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label">Date</label>
+                    <input class="form-control" type="date" name="appointment_date" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Slot</label>
+                    <select class="form-select" name="slot" required>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:30">10:30 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:30">02:30 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Appointment Type</label>
+                <select class="form-select" name="appointment_type">
+                    <option>OPD</option>
+                    <option>Telemedicine</option>
+                    <option>Emergency</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Symptoms</label>
+                <textarea class="form-control" name="symptoms" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-calendar-plus"></i> Book Appointment</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

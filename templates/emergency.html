@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Emergency | MediCare AI{% endblock %}
+{% block page_title %}Emergency Module{% endblock %}
+{% block page_subtitle %}Emergency patient entry, ambulance tracking, and doctor alert{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Emergency Cases</h2>
+            <span>{{ cases|length }} active records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Severity</th>
+                    <th>Location</th>
+                    <th>Ambulance</th>
+                    <th>Alert</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for case in cases %}
+                    <tr>
+                        <td>
+                            <strong>{{ case.patient_name }}</strong>
+                            <div class="text-muted small">{{ case.phone }}</div>
+                        </td>
+                        <td><span class="badge text-bg-danger">{{ case.severity }}</span></td>
+                        <td>{{ case.location }}</td>
+                        <td>{{ case.ambulance_status }}</td>
+                        <td>{{ "Sent" if case.doctor_alerted else "Pending" }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No emergency cases.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Emergency Entry</h2>
+            <span>Immediate alert queue</span>
+        </div>
+        <form method="post" class="stack-form">
+            <div>
+                <label class="form-label">Patient Name</label>
+                <input class="form-control" name="patient_name" required>
+            </div>
+            <div>
+                <label class="form-label">Phone</label>
+                <input class="form-control" name="phone" required>
+            </div>
+            <div>
+                <label class="form-label">Severity</label>
+                <select class="form-select" name="severity" required>
+                    <option>Critical</option>
+                    <option>High</option>
+                    <option>Moderate</option>
+                    <option>Low</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Location</label>
+                <input class="form-control" name="location" required>
+            </div>
+            <div>
+                <label class="form-label">Ambulance Status</label>
+                <select class="form-select" name="ambulance_status">
+                    <option>Dispatching</option>
+                    <option>On Route</option>
+                    <option>Arrived</option>
+                    <option>Patient Picked</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" name="notes" rows="3"></textarea>
+            </div>
+            <button class="btn btn-danger" type="submit"><i class="bi bi-activity"></i> Register Emergency</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

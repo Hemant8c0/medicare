@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Billing | MediCare AI{% endblock %}
+{% block page_title %}Billing System{% endblock %}
+{% block page_subtitle %}Auto bill generation, doctor charges, medicine charges, receipts, and online payment status{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Payment Receipts</h2>
+            <span>{{ bills|length }} bills</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Receipt</th>
+                    <th>Patient</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for bill in bills %}
+                    <tr>
+                        <td>
+                            <strong>{{ bill.receipt_no }}</strong>
+                            <div class="text-muted small">{{ bill.created_at.strftime("%d %b %Y") }}</div>
+                        </td>
+                        <td>{{ bill.patient.name }}</td>
+                        <td>Rs. {{ "%.2f"|format(bill.total) }}</td>
+                        <td><span class="badge text-bg-light">{{ bill.payment_status }}</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.receipt', bill_id=bill.id) }}" data-bs-toggle="tooltip" title="Receipt">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No bills generated.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Generate Bill</h2>
+            <span>Appointment optional</span>
+        </div>
+        <form method="post" class="stack-form">
+            <div>
+                <label class="form-label">Appointment</label>
+                <select class="form-select" name="appointment_id">
+                    <option value="">Manual bill</option>
+                    {% for appointment in appointments %}
+                        <option value="{{ appointment.id }}">#{{ appointment.id }} - {{ appointment.patient.name }} with {{ appointment.doctor.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Patient</label>
+                <select class="form-select" name="patient_id">
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} - {{ patient.patient_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label">Doctor Charges</label>
+                    <input class="form-control" type="number" step="0.01" name="doctor_charges" value="0">
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Medicine Charges</label>
+                    <input class="form-control" type="number" step="0.01" name="medicine_charges" value="0">
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label">Lab Charges</label>
+                    <input class="form-control" type="number" step="0.01" name="lab_charges" value="0">
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Room Charges</label>
+                    <input class="form-control" type="number" step="0.01" name="room_charges" value="0">
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <label class="form-label">Discount</label>
+                    <input class="form-control" type="number" step="0.01" name="discount" value="0">
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="payment_status">
+                        <option>Paid</option>
+                        <option>Unpaid</option>
+                        <option>Refunded</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Method</label>
+                    <select class="form-select" name="payment_method">
+                        <option>Cash</option>
+                        <option>Online</option>
+                        <option>Card</option>
+                        <option>UPI</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-file-earmark-text"></i> Generate Receipt</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

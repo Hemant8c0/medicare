@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Telemedicine | MediCare AI{% endblock %}
+{% block page_title %}Telemedicine{% endblock %}
+{% block page_subtitle %}Video consultation, chat with doctor, and medical report upload workflow{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Consultations</h2>
+            <span>{{ sessions|length }} sessions</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Video</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in sessions %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.patient.name }}</strong>
+                            <div class="text-muted small">{{ item.notes or "No notes" }}</div>
+                        </td>
+                        <td>{{ item.doctor.name }}</td>
+                        <td>{{ item.scheduled_for.strftime("%d %b %Y, %I:%M %p") }}</td>
+                        <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+                        <td>
+                            {% if item.meeting_link %}
+                                <a class="btn btn-sm btn-outline-primary" href="{{ item.meeting_link }}" target="_blank" data-bs-toggle="tooltip" title="Open video">
+                                    <i class="bi bi-camera-video"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if item.messages %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="small">
+                                    {% for message in item.messages %}
+                                        <div><strong>{{ message.sender }}:</strong> {{ message.message }}</div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No telemedicine sessions.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Schedule Video Consultation</h2>
+            <span>Doctor chat enabled</span>
+        </div>
+        <form method="post" class="stack-form mb-4">
+            <input type="hidden" name="form_type" value="session">
+            <div>
+                <label class="form-label">Patient</label>
+                <select class="form-select" name="patient_id" required>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Doctor</label>
+                <select class="form-select" name="doctor_id" required>
+                    {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">{{ doctor.name }} - {{ doctor.specialization }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label">Date</label>
+                    <input class="form-control" type="date" name="session_date" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Slot</label>
+                    <select class="form-select" name="slot">
+                        <option value="09:00">09:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Meeting Link</label>
+                <input class="form-control" name="meeting_link" value="https://meet.example.com/medicare-ai">
+            </div>
+            <div>
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" name="notes" rows="2"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-camera-video"></i> Schedule</button>
+        </form>
+        <div class="section-title">
+            <h2>Chat with Doctor</h2>
+            <span>Session message</span>
+        </div>
+        <form method="post" class="stack-form">
+            <input type="hidden" name="form_type" value="message">
+            <div>
+                <label class="form-label">Session</label>
+                <select class="form-select" name="session_id" required>
+                    {% for item in sessions %}
+                        <option value="{{ item.id }}">#{{ item.id }} - {{ item.patient.name }} / {{ item.doctor.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Sender</label>
+                <input class="form-control" name="sender" value="{{ current_name or 'Patient' }}" required>
+            </div>
+            <div>
+                <label class="form-label">Message</label>
+                <textarea class="form-control" name="message" rows="3" required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-chat-dots"></i> Send Message</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

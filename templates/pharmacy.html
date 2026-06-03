@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Pharmacy | MediCare AI{% endblock %}
+{% block page_title %}Pharmacy Management{% endblock %}
+{% block page_subtitle %}Medicine stock, expiry tracking, medicine sales, and low stock alerts{% endblock %}
+{% block content %}
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Medicine Stock</h2>
+            <span>{{ medicines|length }} items</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Stock</th>
+                    <th>Price</th>
+                    <th>Expiry</th>
+                    <th>Alert</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for medicine in medicines %}
+                    <tr>
+                        <td>
+                            <strong>{{ medicine.name }}</strong>
+                            <div class="text-muted small">{{ medicine.batch_no }} | {{ medicine.supplier or "No supplier" }}</div>
+                        </td>
+                        <td>{{ medicine.stock }}</td>
+                        <td>Rs. {{ "%.2f"|format(medicine.unit_price) }}</td>
+                        <td>{{ medicine.expiry_date.strftime("%d %b %Y") }}</td>
+                        <td>
+                            {% if medicine.is_low_stock %}
+                                <span class="badge text-bg-warning">Low stock</span>
+                            {% endif %}
+                            {% if medicine.is_expiring_soon %}
+                                <span class="badge text-bg-danger">Expiry</span>
+                            {% endif %}
+                            {% if not medicine.is_low_stock and not medicine.is_expiring_soon %}
+                                <span class="badge text-bg-light">OK</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">No stock found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <hr>
+        <div class="section-title">
+            <h2>Recent Sales</h2>
+            <span>{{ sales|length }} entries</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Medicine</th><th>Qty</th><th>Total</th><th>Time</th></tr></thead>
+                <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td>{{ sale.medicine.name }}</td>
+                        <td>{{ sale.quantity }}</td>
+                        <td>Rs. {{ "%.2f"|format(sale.total_amount) }}</td>
+                        <td>{{ sale.sold_at.strftime("%d %b, %I:%M %p") }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-muted">No sales recorded.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Add Medicine</h2>
+            <span>Inventory</span>
+        </div>
+        <form method="post" class="stack-form mb-4">
+            <input type="hidden" name="form_type" value="medicine">
+            <div>
+                <label class="form-label">Medicine Name</label>
+                <input class="form-control" name="name" required>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label">Batch No</label>
+                    <input class="form-control" name="batch_no" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Supplier</label>
+                    <input class="form-control" name="supplier">
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <label class="form-label">Stock</label>
+                    <input class="form-control" type="number" name="stock" value="10" min="0" required>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Threshold</label>
+                    <input class="form-control" type="number" name="threshold" value="10" min="0">
+                </div>
+                <div class="col-4">
+                    <label class="form-label">Unit Price</label>
+                    <input class="form-control" type="number" step="0.01" name="unit_price" value="0" required>
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Expiry Date</label>
+                <input class="form-control" type="date" name="expiry_date" required>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Add Stock</button>
+        </form>
+        <div class="section-title">
+            <h2>Medicine Sale</h2>
+            <span>Auto stock update</span>
+        </div>
+        <form method="post" class="stack-form">
+            <input type="hidden" name="form_type" value="sale">
+            <div>
+                <label class="form-label">Medicine</label>
+                <select class="form-select" name="medicine_id" required>
+                    {% for medicine in medicines %}
+                        <option value="{{ medicine.id }}">{{ medicine.name }} - {{ medicine.stock }} left</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Patient</label>
+                <select class="form-select" name="patient_id">
+                    <option value="">Walk-in sale</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Quantity</label>
+                <input class="form-control" type="number" name="quantity" value="1" min="1" required>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-cart-check"></i> Record Sale</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

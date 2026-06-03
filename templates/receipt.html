@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Receipt {{ bill.receipt_no }} | MediCare AI{% endblock %}
+{% block page_title %}Payment Receipt{% endblock %}
+{% block page_subtitle %}{{ bill.receipt_no }}{% endblock %}
+{% block content %}
+<section class="surface">
+    <div class="section-title">
+        <h2>MediCare AI Receipt</h2>
+        <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <p class="mb-1"><strong>Patient:</strong> {{ bill.patient.name }}</p>
+            <p class="mb-1"><strong>Patient Code:</strong> {{ bill.patient.patient_code }}</p>
+            <p class="mb-1"><strong>Receipt:</strong> {{ bill.receipt_no }}</p>
+            <p class="mb-0"><strong>Date:</strong> {{ bill.created_at.strftime("%d %b %Y, %I:%M %p") }}</p>
+        </div>
+        <div class="col-md-6">
+            <p class="mb-1"><strong>Status:</strong> {{ bill.payment_status }}</p>
+            <p class="mb-1"><strong>Payment Method:</strong> {{ bill.payment_method }}</p>
+            {% if bill.appointment %}
+                <p class="mb-0"><strong>Appointment:</strong> #{{ bill.appointment.id }} with {{ bill.appointment.doctor.name }}</p>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Charge</th><th class="text-end">Amount</th></tr></thead>
+            <tbody>
+            <tr><td>Doctor Charges</td><td class="text-end">Rs. {{ "%.2f"|format(bill.doctor_charges) }}</td></tr>
+            <tr><td>Medicine Charges</td><td class="text-end">Rs. {{ "%.2f"|format(bill.medicine_charges) }}</td></tr>
+            <tr><td>Lab Charges</td><td class="text-end">Rs. {{ "%.2f"|format(bill.lab_charges) }}</td></tr>
+            <tr><td>Room Charges</td><td class="text-end">Rs. {{ "%.2f"|format(bill.room_charges) }}</td></tr>
+            <tr><td>Discount</td><td class="text-end">- Rs. {{ "%.2f"|format(bill.discount) }}</td></tr>
+            <tr><th>Total</th><th class="text-end">Rs. {{ "%.2f"|format(bill.total) }}</th></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+

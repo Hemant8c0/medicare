@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | MediCare AI{% endblock %}
+{% block page_title %}
+    {% if role_dashboard == "doctor" %}Doctor Dashboard
+    {% elif role_dashboard == "patient" %}Patient Dashboard
+    {% else %}Admin Dashboard{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if role_dashboard == "doctor" %}Your appointments, patient queue, and consultation summary
+    {% elif role_dashboard == "patient" %}Your appointments, reports, bills, and medical history
+    {% else %}Patients, doctors, revenue, appointments, and care signals{% endif %}
+{% endblock %}
+{% block content %}
+{% if role_dashboard == "admin" %}
+<section class="metric-grid">
+    <div class="metric-card">
+        <span class="metric-icon teal"><i class="bi bi-people"></i></span>
+        <small>Total Patients</small>
+        <strong>{{ stats.patients }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon indigo"><i class="bi bi-person-vcard"></i></span>
+        <small>Total Doctors</small>
+        <strong>{{ stats.doctors }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon green"><i class="bi bi-currency-rupee"></i></span>
+        <small>Revenue</small>
+        <strong>Rs. {{ "%.2f"|format(stats.revenue) }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon amber"><i class="bi bi-calendar2-check"></i></span>
+        <small>Today's Appointments</small>
+        <strong>{{ stats.today_appointments }}</strong>
+    </div>
+</section>
+
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Monthly Revenue</h2>
+            <span>Last 6 months</span>
+        </div>
+        <canvas id="monthlyRevenueChart" height="120"></canvas>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Patient Statistics</h2>
+            <span>By gender</span>
+        </div>
+        <canvas id="patientStatsChart" height="160"></canvas>
+    </div>
+</section>
+
+<section class="content-grid one-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>Disease Analysis</h2>
+            <span>Medical history</span>
+        </div>
+        <canvas id="diseaseAnalysisChart" height="130"></canvas>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Upcoming Appointments</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.appointments') }}"><i class="bi bi-calendar-plus"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in upcoming %}
+                    <tr>
+                        <td>{{ item.patient.name }}</td>
+                        <td>{{ item.doctor.name }}</td>
+                        <td>{{ item.scheduled_for.strftime("%d %b, %I:%M %p") }}</td>
+                        <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-muted">No appointments found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% elif role_dashboard == "doctor" %}
+<section class="metric-grid">
+    <div class="metric-card">
+        <span class="metric-icon amber"><i class="bi bi-calendar2-check"></i></span>
+        <small>Today's Appointments</small>
+        <strong>{{ stats.today_appointments }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon teal"><i class="bi bi-people"></i></span>
+        <small>My Patients</small>
+        <strong>{{ stats.patients }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon indigo"><i class="bi bi-hourglass-split"></i></span>
+        <small>Pending Visits</small>
+        <strong>{{ stats.pending }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon green"><i class="bi bi-currency-rupee"></i></span>
+        <small>Consultation Revenue</small>
+        <strong>Rs. {{ "%.2f"|format(stats.revenue) }}</strong>
+    </div>
+</section>
+
+<section class="content-grid two-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>My Schedule</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.appointments') }}"><i class="bi bi-calendar-plus"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Time</th>
+                    <th>Symptoms</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in upcoming %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.patient.name }}</strong>
+                            <div class="text-muted small">{{ item.patient.phone }}</div>
+                        </td>
+                        <td>{{ item.scheduled_for.strftime("%d %b, %I:%M %p") }}</td>
+                        <td>{{ item.symptoms or "-" }}</td>
+                        <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-muted">No upcoming appointments.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Appointment Status</h2>
+            <span>{{ doctor.specialization }}</span>
+        </div>
+        <canvas id="doctorStatusChart" height="180"></canvas>
+        <hr>
+        <p class="mb-1"><strong>{{ doctor.name }}</strong></p>
+        <p class="mb-1 text-muted">{{ doctor.qualification or "Qualification not set" }}</p>
+        <p class="mb-0 text-muted">{{ doctor.availability }}</p>
+    </div>
+</section>
+{% else %}
+<section class="metric-grid">
+    <div class="metric-card">
+        <span class="metric-icon teal"><i class="bi bi-calendar2-check"></i></span>
+        <small>My Appointments</small>
+        <strong>{{ stats.appointments }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon indigo"><i class="bi bi-clipboard-pulse"></i></span>
+        <small>My Reports</small>
+        <strong>{{ stats.reports }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon green"><i class="bi bi-receipt"></i></span>
+        <small>Total Bills</small>
+        <strong>Rs. {{ "%.2f"|format(stats.billing) }}</strong>
+    </div>
+    <div class="metric-card">
+        <span class="metric-icon amber"><i class="bi bi-clock-history"></i></span>
+        <small>Upcoming Visits</small>
+        <strong>{{ stats.upcoming }}</strong>
+    </div>
+</section>
+
+<section class="content-grid one-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>My Appointments</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.appointments') }}"><i class="bi bi-calendar-plus"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in upcoming %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.doctor.name }}</strong>
+                            <div class="text-muted small">{{ item.doctor.specialization }}</div>
+                        </td>
+                        <td>{{ item.scheduled_for.strftime("%d %b, %I:%M %p") }}</td>
+                        <td><span class="badge text-bg-light">{{ item.status }}</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">No upcoming appointments.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Billing Summary</h2>
+            <span>{{ bills|length }} receipts</span>
+        </div>
+        <canvas id="patientBillingChart" height="170"></canvas>
+    </div>
+</section>
+
+<section class="content-grid one-one">
+    <div class="surface">
+        <div class="section-title">
+            <h2>My Reports</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.laboratory') }}"><i class="bi bi-clipboard-plus"></i></a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Report</th>
+                    <th>Status</th>
+                    <th>PDF</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>
+                            <strong>{{ report.title }}</strong>
+                            <div class="text-muted small">{{ report.report_type }}</div>
+                        </td>
+                        <td><span class="badge text-bg-light">{{ report.status }}</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.download_report', report_id=report.id) }}" data-bs-toggle="tooltip" title="Download PDF">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-muted">No reports found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="surface">
+        <div class="section-title">
+            <h2>Medical Profile</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.patient_detail', patient_id=patient.id) }}"><i class="bi bi-folder2-open"></i></a>
+        </div>
+        <p class="mb-1"><strong>{{ patient.name }}</strong></p>
+        <p class="mb-1 text-muted">{{ patient.patient_code }} | {{ patient.age }} years | {{ patient.blood_group or "Blood group not set" }}</p>
+        <p class="mb-3 text-muted">{{ patient.phone }} | {{ patient.email }}</p>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Condition</th><th>Medication</th></tr></thead>
+                <tbody>
+                {% for history in patient.histories %}
+                    <tr>
+                        <td>{{ history.condition }}</td>
+                        <td>{{ history.medications or "-" }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="2" class="text-muted">No medical history saved.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    window.MEDICARE_CHARTS = {{ chart_data|safe }};
+</script>
+{% endblock %}
